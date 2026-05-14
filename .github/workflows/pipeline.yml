@@ -24,9 +24,9 @@ jobs:
       - name: Lancer le pipeline
         run: python pipeline.py
         env:
-          DATABASE_URL: ${{ secrets.postgresql://postgres.bkrwgzxnwfbunxbztetk:PREMIER_REVENUE26@aws-0-eu-west-1.pooler.supabase.com:5432/postgres }}
-          EMAIL_EXPEDITEUR: ${{ secrets.melysanelantonkpode2@gmail.com }}
-          EMAIL_MOT_DE_PASSE: ${{ secrets.qmxb vgxu aghb veqq }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          EMAIL_EXPEDITEUR: ${{ secrets.EMAIL_EXPEDITEUR }}
+          EMAIL_MOT_DE_PASSE: ${{ secrets.EMAIL_MOT_DE_PASSE }}
 
   rapport:
     runs-on: ubuntu-latest
