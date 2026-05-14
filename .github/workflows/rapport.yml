@@ -1,0 +1,27 @@
+name: Rapport Email (8h matin)
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # 7h UTC = 8h Bénin (WAT = UTC+1)
+  workflow_dispatch:       # pour tester manuellement
+
+jobs:
+  rapport:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer les dépendances
+        run: pip install pandas sqlalchemy psycopg2-binary python-dotenv
+
+      - name: Envoyer le rapport
+        run: python rapport_once.py
+        env:
+          DB_PASSWORD:      ${{ secrets.DB_PASSWORD }}
+          DB_HOST:          ${{ secrets.DB_HOST }}
+          EMAIL_EXPEDITEUR: ${{ secrets.EMAIL_EXPEDITEUR }}
+          EMAIL_MOT_DE_PASSE: ${{ secrets.EMAIL_MOT_DE_PASSE }}

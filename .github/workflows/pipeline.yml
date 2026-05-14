@@ -1,52 +1,25 @@
-name: Pipeline Crypto
+name: Collecte Crypto (toutes les heures)
 
 on:
   schedule:
-    - cron: '0 * * * *'   # toutes les heures
-  workflow_dispatch:        # permet de lancer manuellement aussi
+    - cron: '0 * * * *'   # toutes les heures pile
+  workflow_dispatch:
 
 jobs:
   pipeline:
-    runs-on: ubuntu-latest  # GitHub fournit une machine Linux gratuite
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Récupérer le code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Installer Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Installer les dépendances
-        run: pip install -r requirements.txt
+        run: pip install requests pandas sqlalchemy psycopg2-binary python-dotenv
 
       - name: Lancer le pipeline
-        run: python pipeline.py
+        run: python pipeline_once.py
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          EMAIL_EXPEDITEUR: ${{ secrets.EMAIL_EXPEDITEUR }}
-          EMAIL_MOT_DE_PASSE: ${{ secrets.EMAIL_MOT_DE_PASSE }}
-
-  rapport:
-    runs-on: ubuntu-latest
-    needs: pipeline           # attend que pipeline finisse avant de démarrer
-
-    steps:
-      - name: Récupérer le code
-        uses: actions/checkout@v3
-
-      - name: Installer Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Installer les dépendances
-        run: pip install -r requirements.txt
-
-      - name: Envoyer le rapport email
-        run: python rapport_email.py
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          EMAIL_EXPEDITEUR: ${{ secrets.EMAIL_EXPEDITEUR }}
-          EMAIL_MOT_DE_PASSE: ${{ secrets.EMAIL_MOT_DE_PASSE }}
+          DB_PASSWORD:      ${{ secrets.DB_PASSWORD }}
+          DB_HOST:          ${{ secrets.DB_HOST }}
