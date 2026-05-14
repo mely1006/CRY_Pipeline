@@ -123,53 +123,36 @@
     const FEDAPAY_PUBLIC_KEY = "pk_live_fWNp701MsCErGUXywht9tOQl";
 
     async function payer() {
-        const nom    = document.getElementById("nom").value.trim();
-        const email  = document.getElementById("email").value.trim();
-        const cryptos = document.getElementById("cryptos").value.trim();
-        const btn    = document.getElementById("btn");
-        const msg    = document.getElementById("msg");
+    const nom     = document.getElementById("nom").value.trim();
+    const email   = document.getElementById("email").value.trim();
+    const cryptos = document.getElementById("cryptos").value.trim();
+    const btn     = document.getElementById("btn");
+    const msg     = document.getElementById("msg");
 
-        if (!nom || !email) {
-            msg.className = "msg error";
-            msg.textContent = "Veuillez remplir votre prénom et email.";
-            return;
-        }
-
-        btn.disabled = true;
-        btn.textContent = "Chargement...";
-        msg.textContent = "";
-
-        try {
-            // Créer la transaction FedaPay
-            const response = await axios.post(
-                "https://api.fedapay.com/v1/transactions",
-                {
-                    description: "Abonnement CryptoWatch Bénin — 1 mois",
-                    amount: 5500,
-                    currency: { iso: "XOF" },
-                    customer: { firstname: nom, email: email },
-                    meta: { cryptos: cryptos }
-                },
-                {
-                    headers: {
-                        "Authorization": `Bearer ${FEDAPAY_PUBLIC_KEY}`,
-                        "Content-Type": "application/json"
-                    }
-                }
-            );
-
-            const token = response.data.v1.token;
-            // Rediriger vers la page de paiement FedaPay
-            window.location.href = `https://checkout.fedapay.com/${token}`;
-
-        } catch (err) {
-            msg.className = "msg error";
-            msg.textContent = "Erreur lors de la création du paiement. Réessayez.";
-            btn.disabled = false;
-            btn.textContent = "🚀 Commencer l'essai gratuit";
-            console.error(err);
-        }
+    if (!nom || !email) {
+        msg.className = "msg error";
+        msg.textContent = "Veuillez remplir votre prénom et email.";
+        return;
     }
+
+    btn.disabled = true;
+    btn.textContent = "Chargement...";
+    msg.textContent = "";
+
+    try {
+        const response = await axios.post(
+            "https://cryptowatch-webhook.onrender.com/creer-paiement",
+            { nom, email, cryptos }
+        );
+        window.location.href = response.data.url;
+    } catch (err) {
+        msg.className = "msg error";
+        msg.textContent = "Erreur lors de la création du paiement. Réessayez.";
+        btn.disabled = false;
+        btn.textContent = "🚀 Commencer l'essai gratuit";
+        console.error(err);
+    }
+}
 </script>
 </body>
 </html>
