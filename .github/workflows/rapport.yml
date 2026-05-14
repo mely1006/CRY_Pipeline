@@ -21,7 +21,8 @@ jobs:
       - name: Envoyer le rapport
         run: python rapport_once.py
         env:
-          DB_PASSWORD:      ${{ secrets.DB_PASSWORD }}
-          DB_HOST:          ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
           EMAIL_EXPEDITEUR: ${{ secrets.EMAIL_EXPEDITEUR }}
           EMAIL_MOT_DE_PASSE: ${{ secrets.EMAIL_MOT_DE_PASSE }}
