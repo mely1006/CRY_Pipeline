@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoWatch Bénin — Abonnement</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: #1a1a2e;
+            border: 1px solid #2a2a4a;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 0 40px rgba(99,102,241,0.15);
+        }
+        .badge {
+            background: #ef4444;
+            color: white;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+        h1 { font-size: 24px; margin-bottom: 8px; }
+        .prix-ancien {
+            color: #6b7280;
+            text-decoration: line-through;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .prix-nouveau {
+            color: #6366f1;
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .essai {
+            color: #10b981;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .avantages {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+        .avantages li {
+            padding: 8px 0;
+            border-bottom: 1px solid #2a2a4a;
+            font-size: 14px;
+            color: #d1d5db;
+        }
+        .avantages li::before { content: "✅ "; }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0f0f1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 15px;
+            margin-bottom: 12px;
+            outline: none;
+        }
+        input:focus { border-color: #6366f1; }
+        input::placeholder { color: #4b5563; }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #4f46e5; }
+        button:disabled { background: #374151; cursor: not-allowed; }
+        .msg { margin-top: 16px; text-align: center; font-size: 14px; }
+        .msg.success { color: #10b981; }
+        .msg.error   { color: #ef4444; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="badge">🔥 Offre de lancement</div>
+    <h1>📊 CryptoWatch Bénin</h1>
+    <p class="prix-ancien">10 000 FCFA/mois</p>
+    <p class="prix-nouveau">5 500 FCFA<span style="font-size:16px;color:#9ca3af">/mois</span></p>
+    <p class="essai">🎁 2 jours d'essai gratuit — sans engagement</p>
+
+    <ul class="avantages">
+        <li>Rapport crypto quotidien personnalisé</li>
+        <li>Alertes hausses et baisses du jour</li>
+        <li>Cryptos au choix (BTC, ETH, SOL...)</li>
+        <li>Livraison par email chaque matin à 9h</li>
+    </ul>
+
+    <input type="text"  id="nom"    placeholder="Votre prénom" />
+    <input type="email" id="email"  placeholder="Votre email" />
+    <input type="text"  id="cryptos" placeholder="Cryptos souhaitées (ex: BTC, ETH, SOL)" />
+
+    <button id="btn" onclick="payer()">🚀 Commencer l'essai gratuit</button>
+    <div class="msg" id="msg"></div>
+</div>
+
+<script>
+    // Remplace par ta vraie clé publique FedaPay
+    const FEDAPAY_PUBLIC_KEY = "pk_live_fWNp701MsCErGUXywht9tOQl";
+
+    async function payer() {
+        const nom    = document.getElementById("nom").value.trim();
+        const email  = document.getElementById("email").value.trim();
+        const cryptos = document.getElementById("cryptos").value.trim();
+        const btn    = document.getElementById("btn");
+        const msg    = document.getElementById("msg");
+
+        if (!nom || !email) {
+            msg.className = "msg error";
+            msg.textContent = "Veuillez remplir votre prénom et email.";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Chargement...";
+        msg.textContent = "";
+
+        try {
+            // Créer la transaction FedaPay
+            const response = await axios.post(
+                "https://api.fedapay.com/v1/transactions",
+                {
+                    description: "Abonnement CryptoWatch Bénin — 1 mois",
+                    amount: 5500,
+                    currency: { iso: "XOF" },
+                    customer: { firstname: nom, email: email },
+                    meta: { cryptos: cryptos }
+                },
+                {
+                    headers: {
+                        "Authorization": `Bearer ${FEDAPAY_PUBLIC_KEY}`,
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            const token = response.data.v1.token;
+            // Rediriger vers la page de paiement FedaPay
+            window.location.href = `https://checkout.fedapay.com/${token}`;
+
+        } catch (err) {
+            msg.className = "msg error";
+            msg.textContent = "Erreur lors de la création du paiement. Réessayez.";
+            btn.disabled = false;
+            btn.textContent = "🚀 Commencer l'essai gratuit";
+            console.error(err);
+        }
+    }
+</script>
+</body>
+</html>
