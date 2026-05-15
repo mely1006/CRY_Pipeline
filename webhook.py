@@ -72,11 +72,12 @@ class WebhookHandler(BaseHTTPRequestHandler):
                 cryptos = body.get("cryptos", "")
 
                 payload = json.dumps({
-                    "description": "Abonnement CryptoWatch Bénin — 1 mois",
-                    "amount": 5500,
-                    "currency": {"iso": "XOF"},
-                    "customer": {"firstname": nom, "email": email},
-                    "meta": {"cryptos": cryptos}
+                    "transaction": {
+                        "description": "Abonnement CryptoWatch Bénin — 1 mois",
+                        "amount": 5500,
+                        "currency": {"iso": "XOF"}
+                    },
+                    "customer": {"firstname": nom, "email": email}
                 }).encode("utf-8")
 
                 req = urllib.request.Request(
@@ -84,12 +85,14 @@ class WebhookHandler(BaseHTTPRequestHandler):
                     data=payload,
                     headers={
                         "Authorization": f"Bearer {FEDAPAY_API_KEY}",
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
                     }
                 )
                 with urllib.request.urlopen(req) as resp:
                     data  = json.loads(resp.read())
                     token = data["v1"]["token"]
+                    checkout_url = f"https://checkout.fedapay.com/{token}?public_key={os.getenv('FEDAPAY_PUBLIC_KEY')}"
 
                 from inscription import inscrire_client
                 inscrire_client(nom, email, cryptos.split(",") if cryptos else [])
