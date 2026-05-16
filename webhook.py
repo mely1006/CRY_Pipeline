@@ -1,7 +1,6 @@
 # webhook.py
 # Reçoit les notifications FedaPay et met à jour Supabase
 
-import urllib.request
 import os
 import json
 from datetime import datetime, timedelta
@@ -9,6 +8,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from sqlalchemy import create_engine, text
 from urllib.parse import quote_plus
 from dotenv import load_dotenv
+import fedapay
+from fedapay import Transaction, Customer
 
 load_dotenv()
 
@@ -19,6 +20,8 @@ DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/postgres"
 engine       = create_engine(DATABASE_URL)
 
 FEDAPAY_API_KEY = os.getenv("FEDAPAY_API_KEY")
+fedapay.api_key = FEDAPAY_API_KEY
+fedapay.environment = "live"
 
 
 def activer_abonnement(email):
@@ -71,29 +74,24 @@ class WebhookHandler(BaseHTTPRequestHandler):
                 email   = body.get("email", "")
                 cryptos = body.get("cryptos", "")
 
-                payload = json.dumps({
-                    "transaction": {
-                        "description": "Abonnement CryptoWatch Bénin — 1 mois",
-                        "amount": 5500,
-                        "currency": {"iso": "XOF"}
-                    },
-                    "customer": {"firstname": nom, "email": email}
-                }).encode("utf-8")
-
-                req = urllib.request.Request(
-                    "https://api.fedapay.com/v1/transactions",
-                    data=payload,
-                    headers={
-                        "Authorization": f"Bearer {FEDAPAY_API_KEY}",
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
-                    }
+                # Créer le client FedaPay
+                customer = Customer.create(
+                    firstname=nom,
+                    email=email
                 )
-                with urllib.request.urlopen(req) as resp:
-                    data  = json.loads(resp.read())
-                    token = data["v1"]["token"]
-                    checkout_url = f"https://checkout.fedapay.com/{token}?public_key={os.getenv('FEDAPAY_PUBLIC_KEY')}"
 
+                # Créer la transaction
+                transaction = Transaction.create(**{
+                    "description": "Abonnement CryptoWatch Bénin — 1 mois",
+                    "amount": 5500,
+                    "currency": {"iso": "XOF"},
+                    "customer": {"id": customer.id}
+                })
+
+                # Générer le token de paiement
+                token = transaction.generateToken()
+
+                # Inscrire le client avec essai gratuit
                 from inscription import inscrire_client
                 inscrire_client(nom, email, cryptos.split(",") if cryptos else [])
 
@@ -102,8 +100,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps({
-                    "token": token,
-                    "url": f"https://checkout.fedapay.com/{token}"
+                    "url": token.url
                 }).encode())
 
             except Exception as e:
