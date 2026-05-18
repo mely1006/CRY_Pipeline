@@ -83,7 +83,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
                     headers=fedapay_headers(),
                     json={
                         "description": "Abonnement CryptoWatch Bénin — 1 mois",
-                        "amount": 5000,
+                        "amount": 100,
                         "currency": {"iso": "XOF"},
                         "customer": {"firstname": nom, "email": email}
                     }
