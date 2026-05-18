@@ -19,7 +19,7 @@ DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/postgres"
 engine       = create_engine(DATABASE_URL)
 
 FEDAPAY_API_KEY = os.getenv("FEDAPAY_API_KEY")
-FEDAPAY_BASE = "https://sandbox-api.fedapay.com/v1"
+FEDAPAY_BASE    = "https://sandbox-api.fedapay.com/v1"
 
 
 def fedapay_headers():
@@ -88,6 +88,10 @@ class WebhookHandler(BaseHTTPRequestHandler):
                         "customer": {"firstname": nom, "email": email}
                     }
                 )
+
+                print(f"FedaPay status: {resp.status_code}")
+                print(f"FedaPay response: {resp.text}")
+
                 resp.raise_for_status()
                 transaction = resp.json()["v1/transaction"]
                 payment_url = transaction["payment_url"]
@@ -119,7 +123,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
                     email       = transaction.get("customer", {}).get("email", "")
                     montant     = transaction.get("amount", 0)
                     print(f"💰 Paiement reçu — {email} — {montant} FCFA")
-                    if email and montant >= 5000:
+                    if email and montant >= 100:
                         activer_abonnement(email)
 
                 self.send_response(200)
