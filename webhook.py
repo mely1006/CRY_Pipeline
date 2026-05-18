@@ -19,7 +19,7 @@ DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/postgres"
 engine       = create_engine(DATABASE_URL)
 
 FEDAPAY_API_KEY = os.getenv("FEDAPAY_API_KEY")
-FEDAPAY_BASE    = "https://api.fedapay.com/v1"
+FEDAPAY_BASE = "https://sandbox-api.fedapay.com/v1"
 
 
 def fedapay_headers():
