@@ -89,9 +89,6 @@ class WebhookHandler(BaseHTTPRequestHandler):
                     }
                 )
 
-                print(f"FedaPay status: {resp.status_code}")
-                print(f"FedaPay response: {resp.text}")
-
                 resp.raise_for_status()
                 transaction = resp.json()["v1/transaction"]
                 payment_url = transaction["payment_url"]
@@ -119,7 +116,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
                 event = data.get("name", "")
 
                 if event == "transaction.approved":
-                    transaction = data.get("data", {}).get("object", {})
+                    transaction = data.get("entity", {})
                     email       = transaction.get("customer", {}).get("email", "")
                     montant     = transaction.get("amount", 0)
                     print(f"💰 Paiement reçu — {email} — {montant} FCFA")
